@@ -1,10 +1,41 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import Navbar from './components/Navbar'
+import api from './api'
 
 export default function AuthPage({ mode }) {
   const isLogin = mode === 'login'
   const navigate = useNavigate()
+  const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [message, setMessage] = useState('')
-  function submit(event) { event.preventDefault(); setMessage(isLogin ? 'Welcome back — opening your coffee ritual.' : 'Your account is ready — welcome to Roastery.'); setTimeout(() => navigate('/app'), 550) }
-  return <main className="min-h-screen bg-[#20110c] px-5 py-8 font-sans text-[#fff8ed] sm:px-8"><nav className="mx-auto flex max-w-6xl items-center justify-between border-b border-white/20 pb-5"><Link className="font-serif text-xl font-bold tracking-tight" to="/"><span className="mr-2 text-amber-400">✦</span>ROASTERY</Link><Link className="text-xs text-amber-100 hover:text-white" to="/">← Back home</Link></nav><section className="mx-auto mt-14 grid max-w-5xl overflow-hidden rounded-3xl border border-white/15 bg-[#321b12] shadow-2xl md:grid-cols-2"><div className="hidden bg-[radial-gradient(circle_at_50%_30%,#b66a31,#643516_45%,#26140d_80%)] p-12 md:block"><span className="text-xs tracking-[.25em] text-amber-200">YOUR DAILY RITUAL</span><h1 className="mt-8 font-serif text-6xl leading-none">Coffee made<br />for your<br /><em>moment.</em></h1><p className="mt-7 max-w-xs text-sm leading-6 text-amber-100/80">Save your favorites, track your coffee passport, and make every visit count.</p></div><div className="p-7 sm:p-12"><p className="text-xs font-semibold tracking-[.2em] text-amber-300">{isLogin ? 'WELCOME BACK' : 'JOIN THE ROASTERY'}</p><h2 className="mt-3 font-serif text-4xl">{isLogin ? 'Sign in' : 'Create account'}</h2><form className="mt-8 space-y-4" onSubmit={submit}>{!isLogin && <label className="block text-xs font-medium">Full name<input required className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm outline-none focus:border-amber-400" placeholder="Your name" /></label>}<label className="block text-xs font-medium">Email address<input required type="email" className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm outline-none focus:border-amber-400" placeholder="you@example.com" /></label><label className="block text-xs font-medium">Password<input required minLength="6" type="password" className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm outline-none focus:border-amber-400" placeholder="••••••••" /></label><button className="w-full rounded-xl bg-[#e4a25d] px-4 py-3 text-sm font-bold text-[#301608] hover:bg-[#f0b773]">{isLogin ? 'Sign in' : 'Create my account'} →</button></form>{message && <p className="mt-4 rounded-lg bg-amber-300/15 p-3 text-xs text-amber-100">{message}</p>}<p className="mt-7 text-xs text-amber-100/70">{isLogin ? 'New here?' : 'Already have an account?'} <Link className="font-semibold text-amber-300" to={isLogin ? '/register' : '/login'}>{isLogin ? 'Create one' : 'Sign in'}</Link></p></div></section></main>
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const updateField = (event) => setForm(current => ({ ...current, [event.target.name]: event.target.value }))
+
+  async function submit(event) {
+    event.preventDefault()
+    setMessage('')
+    setIsSubmitting(true)
+    try {
+      const payload = isLogin ? { email: form.email, password: form.password } : form
+      const { data } = await api.post(isLogin ? '/auth/login' : '/auth/register', payload)
+      localStorage.setItem('ayskeopiUser', JSON.stringify(data.user))
+      setMessage(isLogin ? 'Welcome back — opening your coffee ritual.' : 'Your account is ready — welcome to Ayskeopi.')
+      setTimeout(() => navigate('/app'), 450)
+    } catch (error) {
+      setMessage(error.response?.data?.error || 'We could not complete that request. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return <main className="min-h-screen bg-[#292826] px-4 pb-8 font-sans text-[#e7e2dd] sm:px-6">
+    <Navbar onEnter={() => navigate('/')} onLogin={() => navigate('/login')} onRegister={() => navigate('/register')} />
+    <section className="mx-auto mt-5 grid w-full max-w-3xl overflow-hidden rounded-2xl border border-white/10 bg-[#33312f] shadow-2xl shadow-black/20 md:mt-8 md:min-h-[430px] md:grid-cols-2">
+      <div className="hidden bg-[radial-gradient(circle_at_50%_30%,#76533f,#41302a_45%,#292826_80%)] p-8 md:block"><span className="text-[10px] tracking-[.2em] text-[#d5c8bd]">AYSKEOPI COFFEE</span><h1 className="mt-6 font-serif text-4xl leading-none">Coffee made<br />for your<br /><em>moment.</em></h1><p className="mt-5 max-w-xs text-xs leading-5 text-[#d5ccc5]/80">Save your favorites, track your coffee passport, and make every visit count.</p></div>
+      <div className="p-6 sm:p-8"><p className="text-[10px] font-semibold tracking-[.2em] text-[#cdbbab]">{isLogin ? 'WELCOME BACK' : 'JOIN AYSKEOPI'}</p><h2 className="mt-2 font-serif text-3xl">{isLogin ? 'Sign in' : 'Create account'}</h2>
+        <form className="mt-6 space-y-3" onSubmit={submit}>{!isLogin && <label className="block text-xs font-medium">Full name<input required name="name" value={form.name} onChange={updateField} className="mt-1.5 w-full rounded-lg border border-white/10 bg-white/[.06] px-3 py-2.5 text-sm outline-none focus:border-[#cdbbab]" placeholder="Your name" /></label>}<label className="block text-xs font-medium">Email address<input required name="email" value={form.email} onChange={updateField} type="email" autoComplete="email" className="mt-1.5 w-full rounded-lg border border-white/10 bg-white/[.06] px-3 py-2.5 text-sm outline-none focus:border-[#cdbbab]" placeholder="you@example.com" /></label><label className="block text-xs font-medium">Password<input required name="password" value={form.password} onChange={updateField} minLength="6" type="password" autoComplete={isLogin ? 'current-password' : 'new-password'} className="mt-1.5 w-full rounded-lg border border-white/10 bg-white/[.06] px-3 py-2.5 text-sm outline-none focus:border-[#cdbbab]" placeholder="••••••••" /></label><button disabled={isSubmitting} className="w-full rounded-lg bg-[#e0ddd8] px-4 py-2.5 text-sm font-bold text-[#302f2d] transition hover:bg-white disabled:cursor-wait disabled:opacity-70">{isSubmitting ? 'Please wait…' : isLogin ? 'Sign in →' : 'Create my account →'}</button></form>
+        {message && <p role="status" className="mt-3 rounded-lg bg-white/10 p-3 text-xs text-[#e0d8d1]">{message}</p>}<p className="mt-5 text-xs text-[#d5ccc5]/70">{isLogin ? 'New here?' : 'Already have an account?'} <Link className="font-semibold text-[#e0ddd8]" to={isLogin ? '/register' : '/login'}>{isLogin ? 'Create one' : 'Sign in'}</Link></p>
+      </div>
+    </section>
+  </main>
 }
