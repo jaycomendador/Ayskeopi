@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import api from '../api'
+import api from '../../api'
 const choices = (values, current, set) => <div className="mt-2 flex flex-wrap gap-2">{values.map(value => <button key={value} onClick={() => set(value)} className={`rounded-full border px-3 py-2 text-xs font-semibold ${current === value ? 'border-[#2d1911] bg-[#2d1911] text-white' : 'border-[#5c321d]/20 bg-white hover:bg-[#eadcc9]'}`}>{value}</button>)}</div>
 export default function MenuPage({ onAddToOrder }) {
  const [size,setSize]=useState('Grande'), [milk,setMilk]=useState('Oat milk'), [shot,setShot]=useState(false), [added,setAdded]=useState(false), [coffees,setCoffees]=useState([]), [selected,setSelected]=useState(null), [error,setError]=useState('')

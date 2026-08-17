@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
-import Navbar from '../components/Navbar'
-import api from '../api'
-import americanoImage from '../assets/coffee/americano.png'
-import cappuccinoImage from '../assets/coffee/cappucino.png'
-import caramelImage from '../assets/coffee/caramel.png'
-import mochaImage from '../assets/coffee/mocha.png'
-import spanishImage from '../assets/coffee/spanish.png'
-import vanillaImage from '../assets/coffee/vanilla.png'
+import Navbar from '../../components/Navbar'
+import api from '../../api'
+import americanoImage from '../../assets/coffee/americano.png'
+import cappuccinoImage from '../../assets/coffee/cappucino.png'
+import caramelImage from '../../assets/coffee/caramel.png'
+import mochaImage from '../../assets/coffee/mocha.png'
+import spanishImage from '../../assets/coffee/spanish.png'
+import vanillaImage from '../../assets/coffee/vanilla.png'
 
 const starterCoffees = [
   { name: 'Classic Latte', description: 'Smooth espresso with steamed milk.', category: 'Espresso', price: 165 },

@@ -1,4 +1,4 @@
-import Navbar from './components/Navbar'
+import Navbar from '../../components/Navbar'
 
 function LandingPage({ onEnter, onLogin, onRegister, onMenu, onMatch, onRewards }) {
   return (
