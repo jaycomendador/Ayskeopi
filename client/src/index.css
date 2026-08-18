@@ -12,10 +12,28 @@
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+@keyframes coffee-carousel-slide {
+  from { opacity: 0; transform: translateX(28px) scale(.985); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes coffee-text-fade {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes coffee-image-fade {
+  from { opacity: 0; transform: scale(1.04); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 .coffee-menu-enter { animation: coffee-menu-enter 560ms cubic-bezier(.22, 1, .36, 1) both; }
 .coffee-menu-enter-delay { animation-delay: 160ms; }
 .coffee-card-enter { animation: coffee-card-enter 460ms cubic-bezier(.22, 1, .36, 1) both; }
+.coffee-carousel-slide { animation: coffee-carousel-slide 620ms cubic-bezier(.22, 1, .36, 1) both; }
+.coffee-text-fade { animation: coffee-text-fade 480ms cubic-bezier(.22, 1, .36, 1) both; }
+.coffee-image-fade { animation: coffee-image-fade 700ms cubic-bezier(.22, 1, .36, 1) both; }
 
 @media (prefers-reduced-motion: reduce) {
-  .coffee-menu-enter, .coffee-card-enter { animation: none; }
+  .coffee-menu-enter, .coffee-card-enter, .coffee-carousel-slide, .coffee-text-fade, .coffee-image-fade { animation: none; }
 }
