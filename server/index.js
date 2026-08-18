@@ -74,6 +74,8 @@ app.post('/api/seed', asyncRoute(async (req, res) => {
   if (await Coffee.countDocuments()) return res.status(409).json({ error: 'Database already contains coffee data; seed was not run.' })
   const coffees = await Coffee.insertMany([
     { name: 'Classic Latte', description: 'Smooth espresso with steamed milk.', category: 'Espresso', price: 165 },
+    { name: 'Spanish Latte', description: 'Velvety espresso sweetened with condensed milk.', category: 'Espresso', price: 175 },
+    { name: 'Vanilla Latte', description: 'A smooth latte with a fragrant vanilla finish.', category: 'Espresso', price: 175 },
     { name: 'Iced Caramel Latte', description: 'Creamy, sweet, and refreshing.', category: 'Iced', price: 185 },
     { name: 'Oat Milk Mocha', description: 'Chocolatey espresso with oat milk.', category: 'Espresso', price: 195 },
     { name: 'Iced Americano', description: 'Bold espresso over ice.', category: 'Iced', price: 145 },
