@@ -38,6 +38,10 @@ const publicUser = (user) => ({ id: user._id, name: user.name, email: user.email
 app.get('/api/cafe-status', (req, res) => res.json({ occupancy: 58, crowd: 'Just right', music: 'Lo-fi & slow', volume: 'Low', wifi: 'Excellent' }))
 app.get('/api/health', (req, res) => res.json({ status: 'ok', database: mongoose.connection.readyState === 1 ? 'connected' : 'unavailable' }))
 app.use('/api', dbReady)
+app.post('/api/auth/forgot-password', asyncRoute(async (req, res) => {
+  if (!req.body.email) return res.status(400).json({ error: 'Email is required.' })
+  res.json({ message: 'If an account matches that email, password reset instructions will be sent.' })
+}))
 app.post('/api/auth/register', asyncRoute(async (req, res) => {
   const { name, email, password } = req.body
   if (!name || !email || !password) return res.status(400).json({ error: 'Name, email, and password are required.' })

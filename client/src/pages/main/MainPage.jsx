@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import api from '../api'
+import api from '../../api'
 
-export default function HomePage({ onNavigate }) {
+export default function MainPage({ onNavigate }) {
   const [status, setStatus] = useState({ occupancy: 58, crowd: 'Just right', music: 'Lo-fi & slow', volume: 'Low', wifi: 'Excellent' })
   const [user, setUser] = useState({ streak: 12 })
   useEffect(() => { api.get('/cafe-status').then(({ data }) => setStatus(data)).catch(() => {}); api.get('/users/demo').then(({ data }) => data && setUser(data)).catch(() => {}) }, [])
