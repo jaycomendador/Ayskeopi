@@ -1,56 +1,68 @@
-import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
-import AuthPage from './AuthPage'
-import ForgotPasswordPage from './ForgotPasswordPage'
+import { useState } from 'react'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import LandingPage from './pages/landing/LandingPage'
 import AyskeopiMenuPage from './pages/landing/AyskeopiMenuPage'
 import CoffeeMatchPage from './pages/landing/CoffeeMatchPage'
 import AyskeopiRewardsPage from './pages/landing/AyskeopiRewardsPage'
-import MainPage from './pages/main/MainPage'
-import MenuPage from './pages/main/MenuPage'
-import RewardsPage from './pages/main/RewardsPage'
-import OrdersPage from './pages/main/OrdersPage'
+import AyskeopiContactPage from './pages/landing/AyskeopiContactPage'
+import ForgotPasswordPage from './ForgotPasswordPage'
+import LoadingScreen from './components/LoadingScreen'
 
-function isAuthenticated() {
+function getUser() {
   try {
-    return Boolean(JSON.parse(localStorage.getItem('ayskeopiUser')))
+    return JSON.parse(localStorage.getItem('ayskeopiUser'))
   } catch {
-    return false
+    return null
   }
 }
 
-function PublicRoute() {
-  return isAuthenticated() ? <Navigate to="/app" replace /> : <Outlet />
+function PrivateRoute({ children }) {
+  return getUser() ? children : <Navigate to="/" replace />
 }
 
-function PrivateRoute() {
-  return isAuthenticated() ? <Outlet /> : <Navigate to="/login" replace />
+function PublicRoute({ children }) {
+  return !getUser() ? children : <Navigate to="/" replace />
 }
 
 function App() {
+  const [loading, setLoading] = useState(true)
+
   return (
+    <>
+      {loading && <LoadingScreen onDone={() => setLoading(false)} />}
     <BrowserRouter>
       <Routes>
-        <Route element={<PublicRoute />}>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/coffee-menu" element={<AyskeopiMenuPage />} />
-          <Route path="/coffee-match" element={<CoffeeMatchPage />} />
-          <Route path="/rewards" element={<AyskeopiRewardsPage />} />
-          <Route path="/login" element={<AuthPage mode="login" />} />
-          <Route path="/register" element={<AuthPage mode="register" />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        </Route>
+        <Route path="/"            element={<LandingPage />} />
+        <Route path="/menu"        element={<AyskeopiMenuPage />} />
+        <Route path="/coffee-menu" element={<AyskeopiMenuPage />} />
+        <Route path="/coffee-match" element={<CoffeeMatchPage />} />
+        <Route path="/contact"     element={<AyskeopiContactPage />} />
 
-        <Route element={<PrivateRoute />}>
-          <Route path="/app" element={<MainPage />} />
-          <Route path="/app/menu" element={<MenuPage />} />
-          <Route path="/app/coffeequest" element={<RewardsPage />} />
-          <Route path="/app/rewards" element={<RewardsPage />} />
-          <Route path="/app/orders" element={<OrdersPage />} />
-        </Route>
+        <Route
+          path="/forgot-password"
+          element={
+            <PublicRoute>
+              <ForgotPasswordPage />
+            </PublicRoute>
+          }
+        />
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route
+          path="/rewards"
+          element={
+            <PrivateRoute>
+              <AyskeopiRewardsPage />
+            </PrivateRoute>
+          }
+        />
+
+        <Route path="/app/*"   element={<Navigate to="/" replace />} />
+        <Route path="/login"   element={<Navigate to="/" replace />} />
+        <Route path="/register" element={<Navigate to="/" replace />} />
+        <Route path="*"        element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
+    </>
   )
 }
 
