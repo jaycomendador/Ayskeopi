@@ -53,6 +53,12 @@
 .hero-float {
   animation: floatDrink 5s ease-in-out infinite;
 }
+.hero-img-wrap {
+  position: relative;
+  width: 290px;
+  height: 380px;
+  margin-left: auto;
+}
 @keyframes floatDrink {
   0%, 100% { transform: translateY(0px); }
   50%       { transform: translateY(-8px); }
@@ -153,7 +159,7 @@
     display: flex;
     justify-content: center;
   }
-  .hero-float { width: 280px !important; height: 360px !important; }
+  .hero-img-wrap { width: 250px !important; height: 320px !important; margin: 0 auto; }
 
   .passion-section {
     grid-template-columns: 1fr;
@@ -182,7 +188,7 @@
     padding: 32px 16px 32px;
     gap: 24px;
   }
-  .hero-float { width: 240px !important; height: 300px !important; }
+  .hero-img-wrap { width: 200px !important; height: 260px !important; margin: 0 auto; }
   .hero-btns { flex-direction: column !important; }
   .hero-btns button { width: 100% !important; }
 

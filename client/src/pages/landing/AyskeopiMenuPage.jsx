@@ -6,6 +6,7 @@ import CartModal from '../../components/CartModal'
 import ProfileModal from '../../components/ProfileModal'
 import OrderCustomizeModal from '../../components/OrderCustomizeModal'
 import ContactModal from '../../components/ContactModal'
+import LoginRequiredModal from '../../components/LoginRequiredModal'
 
 const ICED_MENU = [
   { id: 1, name: 'Vanilla Bean Cold Brew', tag: 'POPULAR', price: 155, img: '/menu/01_Vanilla_Bean_Cold_Brew.png', desc: 'Slow-steeped cold brew topped with a float of rich vanilla sweet cream.' },
@@ -30,6 +31,7 @@ export default function AyskeopiMenuPage({ onHome, onLogin, onRegister, onMenu, 
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isContactOpen, setIsContactOpen] = useState(false)
   const [customizingCoffee, setCustomizingCoffee] = useState(null)
+  const [loginRequired, setLoginRequired] = useState(null)
 
   // User state
   const [user, setUser] = useState(() => {
@@ -41,19 +43,50 @@ export default function AyskeopiMenuPage({ onHome, onLogin, onRegister, onMenu, 
   })
 
   // Cart state
-  const [cart, setCart] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('ayskeopiCart')) || []
-    } catch {
-      return []
-    }
-  })
+  const [cart, setCart] = useState([])
 
+  // Load/Merge cart when user changes
   useEffect(() => {
     try {
-      localStorage.setItem('ayskeopiCart', JSON.stringify(cart))
+      if (user) {
+        const storedUserCart = localStorage.getItem(`ayskeopiCart_${user.id || user._id}`)
+        const userCart = storedUserCart ? JSON.parse(storedUserCart) : []
+        
+        const guestCartStored = localStorage.getItem('ayskeopiCart_guest')
+        const guestCart = guestCartStored ? JSON.parse(guestCartStored) : []
+        
+        if (guestCart.length > 0) {
+          const merged = [...userCart]
+          guestCart.forEach(gItem => {
+            const existing = merged.find(uItem => uItem.cartId === gItem.cartId)
+            if (existing) {
+              existing.qty += gItem.qty
+            } else {
+              merged.push(gItem)
+            }
+          })
+          setCart(merged)
+          localStorage.setItem(`ayskeopiCart_${user.id || user._id}`, JSON.stringify(merged))
+          localStorage.removeItem('ayskeopiCart_guest')
+        } else {
+          setCart(userCart)
+        }
+      } else {
+        localStorage.removeItem('ayskeopiCart_guest')
+        setCart([])
+      }
+    } catch {
+      setCart([])
+    }
+  }, [user])
+
+  // Save cart when cart changes
+  useEffect(() => {
+    try {
+      const key = user ? `ayskeopiCart_${user.id || user._id}` : 'ayskeopiCart_guest'
+      localStorage.setItem(key, JSON.stringify(cart))
     } catch {}
-  }, [cart])
+  }, [cart, user])
 
   const openLogin    = () => setAuthModal('login')
   const openRegister = () => setAuthModal('register')
@@ -100,7 +133,17 @@ export default function AyskeopiMenuPage({ onHome, onLogin, onRegister, onMenu, 
 
   function handleLogout() {
     localStorage.removeItem('ayskeopiUser')
+    localStorage.removeItem('ayskeopiCart_guest')
     setUser(null)
+    setCart([])
+  }
+
+  function handleOrderClick(coffee) {
+    if (!user) {
+      setLoginRequired('order')
+      return
+    }
+    setCustomizingCoffee(coffee)
   }
 
   const filteredItems = filter === 'All' 
@@ -116,6 +159,13 @@ export default function AyskeopiMenuPage({ onHome, onLogin, onRegister, onMenu, 
   return (
     <div style={{ minHeight: '100vh', background: '#0d0c0b', color: '#e8e2d8', fontFamily: "'Inter', sans-serif", overflowX: 'hidden', paddingTop: 64 }}>
       {authModal && <AuthModal mode={authModal} onClose={closeModal} onSwitch={switchModal} />}
+      {loginRequired && (
+        <LoginRequiredModal
+          actionType={loginRequired}
+          onClose={() => setLoginRequired(null)}
+          onLoginClick={openLogin}
+        />
+      )}
       {isCartOpen && (
         <CartModal
           cart={cart}
@@ -124,7 +174,7 @@ export default function AyskeopiMenuPage({ onHome, onLogin, onRegister, onMenu, 
           onUpdateQty={updateCartQty}
           onRemoveItem={removeCartItem}
           onClearCart={clearCart}
-          onRequireAuth={openLogin}
+          onRequireAuth={() => setLoginRequired('cart')}
           onOrderSuccess={() => {
             try {
               setUser(JSON.parse(localStorage.getItem('ayskeopiUser')))
@@ -202,7 +252,7 @@ export default function AyskeopiMenuPage({ onHome, onLogin, onRegister, onMenu, 
           {filteredItems.map((item) => (
             <div
               key={item.id}
-              onClick={() => setCustomizingCoffee(item)}
+              onClick={() => handleOrderClick(item)}
               style={{
                 position: 'relative',
                 background: '#161412',
@@ -248,7 +298,7 @@ export default function AyskeopiMenuPage({ onHome, onLogin, onRegister, onMenu, 
                 <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,.06)', paddingTop: 10 }}>
                   <strong style={{ fontSize: 14, fontWeight: 800, color: '#c9a84c' }}>₱{item.price}</strong>
                   <button
-                    onClick={e => { e.stopPropagation(); setCustomizingCoffee(item) }}
+                    onClick={e => { e.stopPropagation(); handleOrderClick(item) }}
                     style={{
                       background: '#c9a84c',
                       color: '#000',

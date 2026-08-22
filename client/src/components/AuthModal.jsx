@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../api'
 
@@ -58,7 +58,7 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
       const { data } = await api.post(isLogin ? '/auth/login' : '/auth/register', payload)
       localStorage.setItem('ayskeopiUser', JSON.stringify(data.user))
       setMessage(isLogin ? 'Welcome back! Redirecting…' : 'Account created! Redirecting…')
-      setTimeout(() => { onClose(); navigate('/app') }, 600)
+      setTimeout(() => { onClose() }, 600)
     } catch (error) {
       setIsError(true)
       setMessage(error.response?.data?.error || 'We could not complete that request. Please try again.')

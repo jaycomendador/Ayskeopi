@@ -6,6 +6,7 @@ import CartModal from '../../components/CartModal'
 import ProfileModal from '../../components/ProfileModal'
 import OrderCustomizeModal from '../../components/OrderCustomizeModal'
 import ContactModal from '../../components/ContactModal'
+import LoginRequiredModal from '../../components/LoginRequiredModal'
 
 /* ─── SVG Icons ────────────────────────────────────────────── */
 function IconBean() {
@@ -83,6 +84,7 @@ function LandingPage({ onEnter, onLogin, onRegister, onMenu, onMatch, onRewards 
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isContactOpen, setIsContactOpen] = useState(false)
   const [customizingCoffee, setCustomizingCoffee] = useState(null)
+  const [loginRequired, setLoginRequired] = useState(null)
   
   // User state
   const [user, setUser] = useState(() => {
@@ -94,19 +96,50 @@ function LandingPage({ onEnter, onLogin, onRegister, onMenu, onMatch, onRewards 
   })
 
   // Cart state
-  const [cart, setCart] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('ayskeopiCart')) || []
-    } catch {
-      return []
-    }
-  })
+  const [cart, setCart] = useState([])
 
+  // Load/Merge cart when user changes
   useEffect(() => {
     try {
-      localStorage.setItem('ayskeopiCart', JSON.stringify(cart))
+      if (user) {
+        const storedUserCart = localStorage.getItem(`ayskeopiCart_${user.id || user._id}`)
+        const userCart = storedUserCart ? JSON.parse(storedUserCart) : []
+        
+        const guestCartStored = localStorage.getItem('ayskeopiCart_guest')
+        const guestCart = guestCartStored ? JSON.parse(guestCartStored) : []
+        
+        if (guestCart.length > 0) {
+          const merged = [...userCart]
+          guestCart.forEach(gItem => {
+            const existing = merged.find(uItem => uItem.cartId === gItem.cartId)
+            if (existing) {
+              existing.qty += gItem.qty
+            } else {
+              merged.push(gItem)
+            }
+          })
+          setCart(merged)
+          localStorage.setItem(`ayskeopiCart_${user.id || user._id}`, JSON.stringify(merged))
+          localStorage.removeItem('ayskeopiCart_guest')
+        } else {
+          setCart(userCart)
+        }
+      } else {
+        localStorage.removeItem('ayskeopiCart_guest')
+        setCart([])
+      }
+    } catch {
+      setCart([])
+    }
+  }, [user])
+
+  // Save cart when cart changes
+  useEffect(() => {
+    try {
+      const key = user ? `ayskeopiCart_${user.id || user._id}` : 'ayskeopiCart_guest'
+      localStorage.setItem(key, JSON.stringify(cart))
     } catch {}
-  }, [cart])
+  }, [cart, user])
 
   const openLogin    = () => setAuthModal('login')
   const openRegister = () => setAuthModal('register')
@@ -152,10 +185,16 @@ function LandingPage({ onEnter, onLogin, onRegister, onMenu, onMatch, onRewards 
 
   function handleLogout() {
     localStorage.removeItem('ayskeopiUser')
+    localStorage.removeItem('ayskeopiCart_guest')
     setUser(null)
+    setCart([])
   }
 
   function handleOrderClick(coffee) {
+    if (!user) {
+      setLoginRequired('order')
+      return
+    }
     setCustomizingCoffee(coffee)
   }
 
@@ -185,6 +224,13 @@ function LandingPage({ onEnter, onLogin, onRegister, onMenu, onMatch, onRewards 
     <div style={{ background: '#0d0c0b', color: '#e8e2d8', fontFamily: "'Inter', sans-serif", overflowX: 'hidden', paddingTop: 64 }}>
       {/* Modals */}
       {authModal && <AuthModal mode={authModal} onClose={closeModal} onSwitch={switchModal} />}
+      {loginRequired && (
+        <LoginRequiredModal
+          actionType={loginRequired}
+          onClose={() => setLoginRequired(null)}
+          onLoginClick={openLogin}
+        />
+      )}
       {isCartOpen && (
         <CartModal
           cart={cart}
@@ -193,7 +239,7 @@ function LandingPage({ onEnter, onLogin, onRegister, onMenu, onMatch, onRewards 
           onUpdateQty={updateCartQty}
           onRemoveItem={removeCartItem}
           onClearCart={clearCart}
-          onRequireAuth={openLogin}
+          onRequireAuth={() => setLoginRequired('cart')}
           onOrderSuccess={() => {
             try {
               setUser(JSON.parse(localStorage.getItem('ayskeopiUser')))
