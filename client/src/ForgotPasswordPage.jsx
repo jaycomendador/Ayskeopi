@@ -23,5 +23,46 @@ export default function ForgotPasswordPage() {
     }
   }
 
-  return <main className="min-h-screen bg-[#292826] px-4 pb-8 font-sans text-[#e7e2dd] sm:px-6"><Navbar onEnter={() => navigate('/')} onLogin={() => navigate('/login')} onRegister={() => navigate('/register')} /><section className="mx-auto mt-5 w-full max-w-md rounded-2xl border border-white/10 bg-[#33312f] p-6 shadow-2xl shadow-black/20 sm:mt-8 sm:p-8"><p className="text-[10px] font-semibold tracking-[.2em] text-[#cdbbab]">ACCOUNT RECOVERY</p><h1 className="mt-2 font-serif text-3xl">Forgot password?</h1><p className="mt-3 text-sm leading-6 text-[#d5ccc5]/75">Enter the email address used for your account and we’ll send password reset instructions.</p><form className="mt-6 space-y-4" onSubmit={submit}><label className="block text-xs font-medium">Email address<input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" className="mt-1.5 w-full rounded-lg border border-white/10 bg-white/[.06] px-3 py-2.5 text-sm outline-none focus:border-[#cdbbab]" placeholder="you@example.com" /></label><button disabled={isSubmitting} className="w-full rounded-lg bg-[#e0ddd8] px-4 py-2.5 text-sm font-bold text-[#302f2d] transition hover:bg-white disabled:opacity-70">{isSubmitting ? 'Sending…' : 'Send reset instructions'}</button></form>{message && <p role="status" className="mt-4 rounded-lg bg-white/10 p-3 text-xs leading-5 text-[#e0d8d1]">{message}</p>}<p className="mt-5 text-xs text-[#d5ccc5]/70"><Link className="font-semibold text-[#e0ddd8]" to="/login">Back to sign in</Link></p></section></main>
+  return (
+    <main style={{ minHeight: '100vh', background: '#0d0c0b', color: '#e8e2d8', fontFamily: "'Inter', sans-serif" }}>
+      <Navbar onEnter={() => navigate('/')} onLogin={() => navigate('/login')} onRegister={() => navigate('/register')} />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 64px)', padding: '32px 16px' }}>
+        <section style={{ width: '100%', maxWidth: 420, background: '#111009', border: '1px solid rgba(255,255,255,.08)', borderRadius: 20, padding: '40px 36px', boxShadow: '0 32px 64px rgba(0,0,0,.5)' }}>
+          <p style={{ margin: '0 0 8px', fontSize: 10, fontWeight: 700, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#c9a84c' }}>Account Recovery</p>
+          <h1 style={{ margin: '0 0 12px', fontSize: 28, fontWeight: 900, letterSpacing: '-0.03em' }}>Forgot password?</h1>
+          <p style={{ margin: '0 0 28px', fontSize: 13, lineHeight: 1.8, color: '#7a736d' }}>Enter the email address used for your account and we'll send password reset instructions.</p>
+          <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12, fontWeight: 600, color: '#b8b0a6' }}>
+              Email address
+              <input
+                required
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                autoComplete="email"
+                placeholder="you@example.com"
+                style={{ background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, padding: '11px 14px', fontSize: 13, color: '#e8e2d8', outline: 'none' }}
+                onFocus={e => e.target.style.borderColor = 'rgba(201,168,76,.6)'}
+                onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,.1)'}
+              />
+            </label>
+            <button
+              disabled={isSubmitting}
+              style={{ background: '#c9a84c', color: '#000', border: 'none', borderRadius: 8, padding: '12px', fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', cursor: 'pointer', opacity: isSubmitting ? 0.7 : 1 }}
+            >
+              {isSubmitting ? 'Sending…' : 'Send reset instructions'}
+            </button>
+          </form>
+          {message && (
+            <p role="status" style={{ marginTop: 16, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 8, padding: '12px 14px', fontSize: 12, lineHeight: 1.7, color: '#c9a84c' }}>
+              {message}
+            </p>
+          )}
+          <p style={{ marginTop: 20, fontSize: 12, color: '#5a5450' }}>
+            <Link style={{ color: '#c9a84c', fontWeight: 600, textDecoration: 'none' }} to="/login">← Back to sign in</Link>
+          </p>
+        </section>
+      </div>
+    </main>
+  )
 }

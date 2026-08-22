@@ -1,82 +1,277 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Navbar from '../../components/Navbar'
-import api from '../../api'
-import americanoImage from '../../assets/coffee/americano.png'
-import cappuccinoImage from '../../assets/coffee/cappucino.png'
-import caramelImage from '../../assets/coffee/caramel.png'
-import mochaImage from '../../assets/coffee/mocha.png'
-import spanishImage from '../../assets/coffee/spanish.png'
-import vanillaImage from '../../assets/coffee/vanilla.png'
+import AuthModal from '../../components/AuthModal'
+import CartModal from '../../components/CartModal'
+import ProfileModal from '../../components/ProfileModal'
+import OrderCustomizeModal from '../../components/OrderCustomizeModal'
+import ContactModal from '../../components/ContactModal'
 
-const starterCoffees = [
-  { name: 'Classic Latte', description: 'Smooth espresso with steamed milk.', category: 'Espresso', price: 165 },
-  { name: 'Iced Caramel Latte', description: 'Creamy, sweet, and refreshing.', category: 'Iced', price: 185 },
-  { name: 'Oat Milk Mocha', description: 'Chocolatey espresso with oat milk.', category: 'Espresso', price: 195 },
-  { name: 'Iced Americano', description: 'Bold espresso over ice.', category: 'Iced', price: 145 },
-  { name: 'Classic Cappuccino', description: 'Rich espresso topped with silky milk foam.', category: 'Espresso', price: 175 },
+const ICED_MENU = [
+  { id: 1, name: 'Vanilla Bean Cold Brew', tag: 'POPULAR', price: 155, img: '/menu/01_Vanilla_Bean_Cold_Brew.png', desc: 'Slow-steeped cold brew topped with a float of rich vanilla sweet cream.' },
+  { id: 2, name: 'Pistachio Cream Iced Coffee', tag: 'NEW', price: 175, img: '/menu/02_Pistachio_Cream_Cold_Coffee.png', desc: 'Signature iced coffee crowned with silky pistachio-infused cream cold foam.' },
+  { id: 3, name: 'Salted Caramel Frappé', tag: 'BEST SELLER', price: 185, img: '/menu/03_Salted_Caramel_Frappe.png', desc: 'Blended iced espresso with salted caramel ribbons and whipped cream.' },
+  { id: 4, name: 'Brown Sugar Oat Milk Shaken Espresso', tag: 'TRENDING', price: 180, img: '/menu/04_Brown_Sugar_Oat_Milk_Shaken_Espresso.png', desc: 'Blonde espresso shaken with brown sugar and cinnamon, topped with oat milk.' },
+  { id: 5, name: 'Mocha Crunch Iced Coffee', tag: null, price: 175, img: '/menu/05_Mocha_Crunch_Iced_Coffee.png', desc: 'Rich dark chocolate mocha over ice with crushed cacao cookie crumble.' },
+  { id: 6, name: 'Toasted Coconut Cold Brew', tag: 'NEW', price: 165, img: '/menu/06_Toasted_Coconut_Cold_Brew.png', desc: 'Tropical cold brew infused with toasted coconut and coconut milk foam.' },
+  { id: 7, name: 'Lavender Honey Iced Latte', tag: null, price: 175, img: '/menu/07_Lavender_Honey_Iced_Latte.png', desc: 'Floral French lavender and wild honey layered with espresso and chilled milk.' },
+  { id: 8, name: 'Cinnamon Dolce Iced Coffee', tag: null, price: 165, img: '/menu/08_Cinnamon_Dolce_Iced_Coffee.png', desc: 'Sweet cinnamon brown sugar syrup with bold espresso and creamy cold milk.' },
+  { id: 9, name: 'Maple Pecan Iced Latte', tag: null, price: 170, img: '/menu/09_Maple_Pecan_Iced_Latte.png', desc: 'Roasted pecan notes and pure maple syrup paired with smooth chilled espresso.' },
+  { id: 10, name: 'Cardamom Spice Cold Brew', tag: 'SPECIAL', price: 160, img: '/menu/10_Cardamom_Spice_Cold_Brew.png', desc: 'Aromatic crushed cardamom and subtle warm spices brewed in cold brew.' },
 ]
 
-const coffeeImages = { americano: americanoImage, cappuccino: cappuccinoImage, caramel: caramelImage, mocha: mochaImage, spanish: spanishImage, vanilla: vanillaImage }
-
-function imageForCoffee(coffee) {
-  const name = coffee.name.toLowerCase()
-  if (name.includes('americano')) return coffeeImages.americano
-  if (name.includes('caramel')) return coffeeImages.caramel
-  if (name.includes('mocha')) return coffeeImages.mocha
-  if (name.includes('cappuccino')) return coffeeImages.cappuccino
-  if (name.includes('spanish')) return coffeeImages.spanish
-  return coffeeImages.vanilla
-}
-
-function Arrow({ direction }) {
-  return <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-5 w-5" stroke="currentColor" strokeWidth="1.8"><path d={direction === 'left' ? 'm14 6-6 6 6 6' : 'm10 6 6 6-6 6'} strokeLinecap="round" strokeLinejoin="round" /></svg>
-}
-
-function Preview({ coffee, onClick }) {
-  return <button onClick={onClick} aria-label={`Show ${coffee.name}`} className="hidden w-28 shrink-0 opacity-55 transition duration-300 hover:scale-105 hover:opacity-90 sm:block"><span className="block aspect-[.7] overflow-hidden rounded-3xl border border-white/10 bg-[#392b27] shadow-xl"><img src={imageForCoffee(coffee)} alt="" className="h-full w-full object-cover" /></span></button>
-}
-
 export default function AyskeopiMenuPage({ onHome, onLogin, onRegister, onMenu, onMatch, onRewards }) {
-  const [coffees, setCoffees] = useState(starterCoffees)
-  const [active, setActive] = useState(0)
-  const [message, setMessage] = useState('')
+  const navigate = useNavigate()
+  const [filter, setFilter] = useState('All')
+  
+  // Modals state
+  const [authModal, setAuthModal] = useState(null)
+  const [isCartOpen, setIsCartOpen] = useState(false)
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [isContactOpen, setIsContactOpen] = useState(false)
+  const [customizingCoffee, setCustomizingCoffee] = useState(null)
+
+  // User state
+  const [user, setUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('ayskeopiUser'))
+    } catch {
+      return null
+    }
+  })
+
+  // Cart state
+  const [cart, setCart] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('ayskeopiCart')) || []
+    } catch {
+      return []
+    }
+  })
 
   useEffect(() => {
-    api.get('/coffees').then(({ data }) => {
-      if (data.length) {
-        setCoffees(data)
-        setActive(0)
+    try {
+      localStorage.setItem('ayskeopiCart', JSON.stringify(cart))
+    } catch {}
+  }, [cart])
+
+  const openLogin    = () => setAuthModal('login')
+  const openRegister = () => setAuthModal('register')
+  const closeModal   = () => {
+    setAuthModal(null)
+    try {
+      setUser(JSON.parse(localStorage.getItem('ayskeopiUser')))
+    } catch {}
+  }
+  const switchModal  = () => setAuthModal(m => m === 'login' ? 'register' : 'login')
+
+  const goLogin    = onLogin    ?? openLogin
+  const goRegister = onRegister ?? openRegister
+  const goHome     = onHome     ?? (() => navigate('/'))
+  const goMatch    = onMatch    ?? (() => navigate('/coffee-match'))
+  const goRewards  = onRewards  ?? (() => navigate('/rewards'))
+
+  function addToCart(item) {
+    setCart(prev => {
+      const existing = prev.find(i => i.cartId === item.cartId)
+      if (existing) {
+        return prev.map(i => i.cartId === item.cartId ? { ...i, qty: i.qty + item.qty } : i)
       }
-    }).catch(() => setMessage('Showing the Ayskeopi starter menu while the database is unavailable.'))
-  }, [])
+      return [...prev, item]
+    })
+    setIsCartOpen(true)
+  }
 
-  const move = (amount) => setActive(current => (current + amount + coffees.length) % coffees.length)
-  const at = (offset) => coffees[(active + offset + coffees.length) % coffees.length]
-  const selected = at(0)
-  if (!selected) return null
+  function updateCartQty(cartId, newQty) {
+    if (newQty <= 0) {
+      setCart(prev => prev.filter(i => i.cartId !== cartId))
+    } else {
+      setCart(prev => prev.map(i => i.cartId === cartId ? { ...i, qty: newQty } : i))
+    }
+  }
 
-  return <main className="h-screen overflow-hidden bg-[radial-gradient(circle_at_50%_42%,#725344_0,#403431_30%,#292826_69%)] font-sans text-[#e7e2dd]">
-    <Navbar onEnter={onHome} onLogin={onLogin} onRegister={onRegister} onMenu={onMenu} onMatch={onMatch} onRewards={onRewards} />
-    <section className="mx-auto flex h-[calc(100vh-3.5rem)] max-w-6xl flex-col overflow-hidden px-5 py-5 sm:px-8">
-      <header className="coffee-menu-enter shrink-0 text-center">
-        <p className="text-[10px] uppercase tracking-[.32em] text-[#cdbbab]">Ayskeopi selection</p>
-        <h1 className="mt-2 text-3xl font-black tracking-[-.05em] sm:text-5xl">Coffee Menu</h1>
-        {message && <p className="mt-2 text-xs text-[#cdbbab]">{message}</p>}
-      </header>
-      <div className="flex min-h-[250px] flex-1 items-center justify-center gap-3 overflow-hidden sm:gap-8">
-        <Preview coffee={at(-1)} onClick={() => move(-1)} />
-        <button onClick={() => move(-1)} className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/20 bg-white/[.06] transition hover:scale-110 hover:bg-white/15" aria-label="Previous coffee"><Arrow direction="left" /></button>
-        <article key={selected.name} className="coffee-card-enter relative h-[335px] w-[min(66vw,260px)] shrink-0 overflow-hidden rounded-[2rem] border border-white/20 bg-[#392b27] text-center shadow-2xl sm:h-[390px] sm:w-[300px]">
-          <img src={imageForCoffee(selected)} alt={selected.name} className="absolute inset-0 h-full w-full object-cover" />
-        </article>
-        <button onClick={() => move(1)} className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/20 bg-white/[.06] transition hover:scale-110 hover:bg-white/15" aria-label="Next coffee"><Arrow direction="right" /></button>
-        <Preview coffee={at(1)} onClick={() => move(1)} />
-      </div>
-      <footer className="coffee-menu-enter coffee-menu-enter-delay mx-auto w-full max-w-xl shrink-0 pb-2 text-center">
-        <p className="text-sm leading-6 text-[#c2bab3]">{selected.description || 'Carefully crafted by Ayskeopi.'}</p>
-        <div className="mt-3 flex items-center justify-center gap-4"><strong className="text-lg">₱{selected.price}</strong><button onClick={onLogin} className="rounded-md border border-white/25 px-4 py-2 text-xs font-medium transition hover:bg-white/10">Sign in to order</button></div>
-        <div className="mt-4 flex justify-center gap-2">{coffees.map((coffee, index) => <button key={coffee._id || coffee.name} onClick={() => setActive(index)} aria-label={`Show ${coffee.name}`} className={`h-1.5 rounded-full transition-all ${index === active ? 'w-6 bg-[#e0ddd8]' : 'w-1.5 bg-white/30'}`} />)}</div>
-      </footer>
-    </section>
-  </main>
+  function removeCartItem(cartId) {
+    setCart(prev => prev.filter(i => i.cartId !== cartId))
+  }
+
+  function clearCart() {
+    setCart([])
+  }
+
+  function handleLogout() {
+    localStorage.removeItem('ayskeopiUser')
+    setUser(null)
+  }
+
+  const filteredItems = filter === 'All' 
+    ? ICED_MENU 
+    : filter === 'Cold Brew' 
+      ? ICED_MENU.filter(i => i.name.includes('Cold Brew'))
+      : filter === 'Iced Latte'
+        ? ICED_MENU.filter(i => i.name.includes('Latte'))
+        : ICED_MENU.filter(i => !i.name.includes('Cold Brew') && !i.name.includes('Latte'))
+
+  const cartTotalCount = cart.reduce((sum, item) => sum + item.qty, 0)
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#0d0c0b', color: '#e8e2d8', fontFamily: "'Inter', sans-serif", overflowX: 'hidden', paddingTop: 64 }}>
+      {authModal && <AuthModal mode={authModal} onClose={closeModal} onSwitch={switchModal} />}
+      {isCartOpen && (
+        <CartModal
+          cart={cart}
+          user={user}
+          onClose={() => setIsCartOpen(false)}
+          onUpdateQty={updateCartQty}
+          onRemoveItem={removeCartItem}
+          onClearCart={clearCart}
+          onRequireAuth={openLogin}
+          onOrderSuccess={() => {
+            try {
+              setUser(JSON.parse(localStorage.getItem('ayskeopiUser')))
+            } catch {}
+          }}
+        />
+      )}
+      {isProfileOpen && (
+        <ProfileModal
+          user={user}
+          onClose={() => setIsProfileOpen(false)}
+          onLogout={handleLogout}
+        />
+      )}
+      {customizingCoffee && (
+        <OrderCustomizeModal
+          coffee={customizingCoffee}
+          onClose={() => setCustomizingCoffee(null)}
+          onAddToCart={addToCart}
+        />
+      )}
+      {isContactOpen && (
+        <ContactModal onClose={() => setIsContactOpen(false)} />
+      )}
+
+      <Navbar
+        onEnter={goHome}
+        onLogin={goLogin}
+        onRegister={goRegister}
+        onMenu={onMenu}
+        onMatch={goMatch}
+        onRewards={goRewards}
+        onContact={() => setIsContactOpen(true)}
+        user={user}
+        cartCount={cartTotalCount}
+        onOpenCart={() => setIsCartOpen(true)}
+        onOpenProfile={() => setIsProfileOpen(true)}
+      />
+
+      <main className="page-inner">
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <p style={{ margin: '0 0 8px', fontSize: 9, fontWeight: 700, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#c9a84c' }}>Ayskeopi Collection</p>
+          <h1 style={{ margin: '0 0 12px', fontSize: 'clamp(1.8rem,3.8vw,2.8rem)', fontWeight: 900, letterSpacing: '-0.03em' }}>ICED COFFEE MENU</h1>
+          <p style={{ margin: '0 auto', maxWidth: 480, fontSize: 12, lineHeight: 1.7, color: '#7a736d' }}>
+            Ten handcrafted cold brews, iced lattes, and shaken espresso creations steeped for crisp, velvety perfection.
+          </p>
+
+          {/* Filter Pills */}
+          <div style={{ marginTop: 22, display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap' }} className="menu-filter-pills">
+            {['All', 'Cold Brew', 'Iced Latte', 'Specialty & Frappé'].map(cat => (
+              <button
+                key={cat}
+                onClick={() => setFilter(cat)}
+                style={{
+                  background: filter === cat ? '#c9a84c' : 'rgba(255,255,255,.05)',
+                  color: filter === cat ? '#000' : '#b8b0a6',
+                  border: filter === cat ? '1px solid #c9a84c' : '1px solid rgba(255,255,255,.1)',
+                  borderRadius: 20,
+                  padding: '6px 16px',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all .2s',
+                }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 10 Cards Grid */}
+        <div className="menu-grid" style={{ gap: 16 }}>
+          {filteredItems.map((item) => (
+            <div
+              key={item.id}
+              onClick={() => setCustomizingCoffee(item)}
+              style={{
+                position: 'relative',
+                background: '#161412',
+                borderRadius: 16,
+                border: '1px solid rgba(255,255,255,.08)',
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+                cursor: 'pointer',
+                transition: 'transform .2s, border-color .2s, box-shadow .2s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.borderColor = 'rgba(201,168,76,.4)'; e.currentTarget.style.boxShadow = '0 12px 28px rgba(0,0,0,.6)' }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.borderColor = 'rgba(255,255,255,.08)'; e.currentTarget.style.boxShadow = 'none' }}
+            >
+              {item.tag && (
+                <span style={{ position: 'absolute', top: 8, left: 8, zIndex: 2, background: '#c9a84c', color: '#000', fontSize: 8, fontWeight: 800, letterSpacing: '0.06em', borderRadius: 4, padding: '2px 6px' }}>
+                  {item.tag}
+                </span>
+              )}
+              <div
+                style={{ width: '100%', height: 180, overflow: 'hidden', background: '#e3d7c9' }}
+              >
+                <img
+                  src={item.img}
+                  alt={item.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform .3s' }}
+                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.04)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                />
+              </div>
+              <div style={{ padding: '14px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+                <div>
+                  <span style={{ display: 'inline-block', fontSize: 8, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#c9a84c', border: '1px solid rgba(201,168,76,.35)', borderRadius: 3, padding: '1px 5px', marginBottom: 5 }}>
+                    ICE COFFEE
+                  </span>
+                  <h3
+                    style={{ margin: '0 0 3px', fontSize: 12, fontWeight: 700, color: '#e8e2d8', lineHeight: 1.35 }}
+                  >
+                    {item.name}
+                  </h3>
+                  <p style={{ margin: 0, fontSize: 10, lineHeight: 1.45, color: '#7a736d' }}>{item.desc}</p>
+                </div>
+                <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,.06)', paddingTop: 10 }}>
+                  <strong style={{ fontSize: 14, fontWeight: 800, color: '#c9a84c' }}>₱{item.price}</strong>
+                  <button
+                    onClick={e => { e.stopPropagation(); setCustomizingCoffee(item) }}
+                    style={{
+                      background: '#c9a84c',
+                      color: '#000',
+                      border: 'none',
+                      borderRadius: 6,
+                      padding: '6px 12px',
+                      fontSize: 10,
+                      fontWeight: 800,
+                      letterSpacing: '0.04em',
+                      cursor: 'pointer',
+                      transition: 'background .2s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#e2bd60'}
+                    onMouseLeave={e => e.currentTarget.style.background = '#c9a84c'}
+                  >
+                    Order
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </main>
+    </div>
+  )
 }
