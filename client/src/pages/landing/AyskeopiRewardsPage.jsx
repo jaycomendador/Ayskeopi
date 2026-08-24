@@ -65,7 +65,7 @@ export default function AyskeopiRewardsPage({ onHome, onLogin, onRegister, onMen
   // User state
   const [user, setUser] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem('ayskeopiUser'))
+      return JSON.parse(sessionStorage.getItem('ayskeopiUser'))
     } catch {
       return null
     }
@@ -122,7 +122,7 @@ export default function AyskeopiRewardsPage({ onHome, onLogin, onRegister, onMen
   const closeModal   = () => {
     setAuthModal(null)
     try {
-      setUser(JSON.parse(localStorage.getItem('ayskeopiUser')))
+      setUser(JSON.parse(sessionStorage.getItem('ayskeopiUser')))
     } catch {}
   }
   const switchModal  = () => setAuthModal(m => m === 'login' ? 'register' : 'login')
@@ -158,7 +158,7 @@ export default function AyskeopiRewardsPage({ onHome, onLogin, onRegister, onMen
       const updatedPoints = Math.max(0, currentPoints - coffee.pointsCost)
       const updatedUser = { ...user, loyaltyPoints: updatedPoints }
       setUser(updatedUser)
-      localStorage.setItem('ayskeopiUser', JSON.stringify(updatedUser))
+      sessionStorage.setItem('ayskeopiUser', JSON.stringify(updatedUser))
 
       setRedeemedDrink(coffee)
     } catch (err) {
@@ -169,7 +169,7 @@ export default function AyskeopiRewardsPage({ onHome, onLogin, onRegister, onMen
   }
 
   function handleLogout() {
-    localStorage.removeItem('ayskeopiUser')
+    sessionStorage.removeItem('ayskeopiUser')
     localStorage.removeItem('ayskeopiCart_guest')
     setUser(null)
     setCart([])
@@ -197,7 +197,7 @@ export default function AyskeopiRewardsPage({ onHome, onLogin, onRegister, onMen
           onClearCart={() => setCart([])}
           onRequireAuth={() => setLoginRequired('cart')}
           onOrderSuccess={() => {
-            try { setUser(JSON.parse(localStorage.getItem('ayskeopiUser'))) } catch {}
+            try { setUser(JSON.parse(sessionStorage.getItem('ayskeopiUser'))) } catch {}
           }}
         />
       )}

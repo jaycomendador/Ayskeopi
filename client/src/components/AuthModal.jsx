@@ -56,7 +56,7 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
     try {
       const payload = isLogin ? { email: form.email, password: form.password } : form
       const { data } = await api.post(isLogin ? '/auth/login' : '/auth/register', payload)
-      localStorage.setItem('ayskeopiUser', JSON.stringify(data.user))
+      sessionStorage.setItem('ayskeopiUser', JSON.stringify(data.user))
       setMessage(isLogin ? 'Welcome back! Redirecting…' : 'Account created! Redirecting…')
       setTimeout(() => { onClose() }, 600)
     } catch (error) {
