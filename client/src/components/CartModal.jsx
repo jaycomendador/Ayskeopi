@@ -76,12 +76,12 @@ export default function CartModal({ cart, onClose, onUpdateQty, onRemoveItem, on
       const results = await Promise.all(orderPromises)
       const lastData = results[results.length - 1]?.data
       
-      // Update local storage user loyalty points if returned
+      // Update session storage user loyalty points if returned
       if (lastData?.loyaltyPoints !== undefined) {
-        const stored = JSON.parse(localStorage.getItem('ayskeopiUser') || '{}')
+        const stored = JSON.parse(sessionStorage.getItem('ayskeopiUser') || '{}')
         stored.loyaltyPoints = lastData.loyaltyPoints
         stored.passportStamps = lastData.passportStamps
-        localStorage.setItem('ayskeopiUser', JSON.stringify(stored))
+        sessionStorage.setItem('ayskeopiUser', JSON.stringify(stored))
       }
 
       setSuccessOrder({

@@ -36,7 +36,7 @@ export default function AyskeopiMenuPage({ onHome, onLogin, onRegister, onMenu, 
   // User state
   const [user, setUser] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem('ayskeopiUser'))
+      return JSON.parse(sessionStorage.getItem('ayskeopiUser'))
     } catch {
       return null
     }
@@ -93,7 +93,7 @@ export default function AyskeopiMenuPage({ onHome, onLogin, onRegister, onMenu, 
   const closeModal   = () => {
     setAuthModal(null)
     try {
-      setUser(JSON.parse(localStorage.getItem('ayskeopiUser')))
+      setUser(JSON.parse(sessionStorage.getItem('ayskeopiUser')))
     } catch {}
   }
   const switchModal  = () => setAuthModal(m => m === 'login' ? 'register' : 'login')
@@ -132,7 +132,7 @@ export default function AyskeopiMenuPage({ onHome, onLogin, onRegister, onMenu, 
   }
 
   function handleLogout() {
-    localStorage.removeItem('ayskeopiUser')
+    sessionStorage.removeItem('ayskeopiUser')
     localStorage.removeItem('ayskeopiCart_guest')
     setUser(null)
     setCart([])
@@ -177,7 +177,7 @@ export default function AyskeopiMenuPage({ onHome, onLogin, onRegister, onMenu, 
           onRequireAuth={() => setLoginRequired('cart')}
           onOrderSuccess={() => {
             try {
-              setUser(JSON.parse(localStorage.getItem('ayskeopiUser')))
+              setUser(JSON.parse(sessionStorage.getItem('ayskeopiUser')))
             } catch {}
           }}
         />

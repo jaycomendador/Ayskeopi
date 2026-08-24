@@ -89,7 +89,7 @@ function LandingPage({ onEnter, onLogin, onRegister, onMenu, onMatch, onRewards 
   // User state
   const [user, setUser] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem('ayskeopiUser'))
+      return JSON.parse(sessionStorage.getItem('ayskeopiUser'))
     } catch {
       return null
     }
@@ -146,7 +146,7 @@ function LandingPage({ onEnter, onLogin, onRegister, onMenu, onMatch, onRewards 
   const closeModal   = () => {
     setAuthModal(null)
     try {
-      setUser(JSON.parse(localStorage.getItem('ayskeopiUser')))
+      setUser(JSON.parse(sessionStorage.getItem('ayskeopiUser')))
     } catch {}
   }
   const switchModal  = () => setAuthModal(m => m === 'login' ? 'register' : 'login')
@@ -184,7 +184,7 @@ function LandingPage({ onEnter, onLogin, onRegister, onMenu, onMatch, onRewards 
   }
 
   function handleLogout() {
-    localStorage.removeItem('ayskeopiUser')
+    sessionStorage.removeItem('ayskeopiUser')
     localStorage.removeItem('ayskeopiCart_guest')
     setUser(null)
     setCart([])
@@ -242,7 +242,7 @@ function LandingPage({ onEnter, onLogin, onRegister, onMenu, onMatch, onRewards 
           onRequireAuth={() => setLoginRequired('cart')}
           onOrderSuccess={() => {
             try {
-              setUser(JSON.parse(localStorage.getItem('ayskeopiUser')))
+              setUser(JSON.parse(sessionStorage.getItem('ayskeopiUser')))
             } catch {}
           }}
         />
@@ -507,11 +507,27 @@ function LandingPage({ onEnter, onLogin, onRegister, onMenu, onMatch, onRewards 
             </div>
             <p style={{ fontSize: 10, lineHeight: 1.7, color: '#5a5450', maxWidth: 180 }}>Good ice. Great days. Your premium destination for iced coffee.</p>
           </div>
-          {[['Quick Links', ['Home','Menu','Shop','Rewards']], ['Shop', ['Cold Brew','Iced Latte','Frappuccino','Merch']], ['Support', ['FAQ','Track Order','Shipping','Returns']], ['Contact', ['+63 912 345 6789','hello@ayskeopi.com','Makati City, PH']]].map(([heading, links]) => (
+          {[['Quick Links', ['Home','Menu','Shop','Rewards','Admin Portal']], ['Shop', ['Cold Brew','Iced Latte','Frappuccino','Merch']], ['Support', ['FAQ','Track Order','Shipping','Returns']], ['Contact', ['+63 912 345 6789','hello@ayskeopi.com','Makati City, PH']]].map(([heading, links]) => (
             <div key={heading}>
               <p style={{ margin: '0 0 12px', fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#c9a84c' }}>{heading}</p>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {links.map(link => <li key={link}><button style={{ background: 'none', border: 'none', padding: 0, fontSize: 10, color: '#5a5450', cursor: 'pointer' }}>{link}</button></li>)}
+                {links.map(link => {
+                  const onClick = link === 'Home' ? () => navigate('/')
+                                : link === 'Menu' ? () => navigate('/coffee-menu')
+                                : link === 'Rewards' ? () => navigate('/rewards')
+                                : link === 'Admin Portal' ? () => navigate('/admin')
+                                : undefined;
+                  return <li key={link}>
+                    <button
+                      onClick={onClick}
+                      style={{ background: 'none', border: 'none', padding: 0, fontSize: 10, color: '#5a5450', cursor: onClick ? 'pointer' : 'default', transition: 'color .2s' }}
+                      onMouseEnter={e => { if (onClick) e.currentTarget.style.color = '#c9a84c' }}
+                      onMouseLeave={e => { if (onClick) e.currentTarget.style.color = '#5a5450' }}
+                    >
+                      {link}
+                    </button>
+                  </li>
+                })}
               </ul>
             </div>
           ))}

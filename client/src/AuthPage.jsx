@@ -35,7 +35,7 @@ export default function AuthPage({ mode }) {
     try {
       const payload = isLogin ? { email: form.email, password: form.password } : form
       const { data } = await api.post(isLogin ? '/auth/login' : '/auth/register', payload)
-      localStorage.setItem('ayskeopiUser', JSON.stringify(data.user))
+      sessionStorage.setItem('ayskeopiUser', JSON.stringify(data.user))
       setMessage(isLogin ? 'Welcome back — opening your coffee ritual.' : 'Your account is ready — welcome to Ayskeopi.')
       setTimeout(() => navigate('/app'), 450)
     } catch (error) {

@@ -7,10 +7,27 @@ import AyskeopiRewardsPage from './pages/landing/AyskeopiRewardsPage'
 import AyskeopiContactPage from './pages/landing/AyskeopiContactPage'
 import ForgotPasswordPage from './ForgotPasswordPage'
 import LoadingScreen from './components/LoadingScreen'
+import AdminLayout from './pages/admin/AdminLayout'
+import AdminLogin from './pages/admin/AdminLogin'
+import AdminDashboard from './pages/admin/AdminDashboard'
+import AdminProducts from './pages/admin/AdminProducts'
+import AdminOrders from './pages/admin/AdminOrders'
+import AdminCustomers from './pages/admin/AdminCustomers'
+import AdminFeedback from './pages/admin/AdminFeedback'
 
 function getUser() {
   try {
-    return JSON.parse(localStorage.getItem('ayskeopiUser'))
+    return JSON.parse(sessionStorage.getItem('ayskeopiUser'))
+  } catch {
+    return null
+  }
+}
+
+// Check specifically for admin session
+function getAdmin() {
+  try {
+    const admin = JSON.parse(sessionStorage.getItem('ayskeopiAdmin'))
+    return admin?.role === 'admin' ? admin : null
   } catch {
     return null
   }
@@ -22,6 +39,11 @@ function PrivateRoute({ children }) {
 
 function PublicRoute({ children }) {
   return !getUser() ? children : <Navigate to="/" replace />
+}
+
+// Protects admin routes — redirects to /admin/login if not authenticated as admin
+function AdminRoute({ children }) {
+  return getAdmin() ? children : <Navigate to="/admin/login" replace />
 }
 
 function App() {
@@ -55,6 +77,25 @@ function App() {
             </PrivateRoute>
           }
         />
+
+        {/* Admin Login — always accessible */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+
+        {/* Protected Admin Portal */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminLayout />
+            </AdminRoute>
+          }
+        >
+          <Route index element={<AdminDashboard />} />
+          <Route path="products"  element={<AdminProducts />} />
+          <Route path="orders"    element={<AdminOrders />} />
+          <Route path="customers" element={<AdminCustomers />} />
+          <Route path="feedback"  element={<AdminFeedback />} />
+        </Route>
 
         <Route path="/app/*"   element={<Navigate to="/" replace />} />
         <Route path="/login"   element={<Navigate to="/" replace />} />

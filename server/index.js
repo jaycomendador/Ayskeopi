@@ -61,10 +61,12 @@ app.post('/api/auth/login', asyncRoute(async (req, res) => {
   res.json({ user: publicUser(user) })
 }))
 app.get('/api/coffees', asyncRoute(async (req, res) => {
-  const coffees = await Coffee.find({ available: true }).sort('name')
+  const filter = req.query.all === 'true' ? {} : { available: true }
+  const coffees = await Coffee.find(filter).sort('name')
   res.json(coffees.map(coffee => ({ ...coffee.toObject(), rewardPoints: pointsForCoffee(coffee) })))
 }))
 app.post('/api/coffees', asyncRoute(async (req, res) => res.status(201).json(await Coffee.create(req.body))))
+app.patch('/api/coffees/:id', asyncRoute(async (req, res) => res.json(await Coffee.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }))))
 app.get('/api/coffeeshops', asyncRoute(async (req, res) => res.json(await CoffeeShop.find().sort('name'))))
 app.get('/api/users/demo', asyncRoute(async (req, res) => res.json(await User.findOne({ email: 'jay@example.com' }))))
 app.get('/api/users/:id/coffeequest', asyncRoute(async (req, res) => {
@@ -79,9 +81,11 @@ app.get('/api/users/:id/coffeequest', asyncRoute(async (req, res) => {
     coffees: coffees.map(coffee => ({ id: coffee._id, name: coffee.name, rewardPoints: pointsForCoffee(coffee), available: points >= pointsForCoffee(coffee) })),
   })
 }))
+app.get('/api/users', asyncRoute(async (req, res) => res.json(await User.find().sort('name'))))
 app.post('/api/users', asyncRoute(async (req, res) => res.status(201).json(await User.create(req.body))))
 app.patch('/api/users/:id', asyncRoute(async (req, res) => res.json(await User.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }))))
 app.get('/api/orders', asyncRoute(async (req, res) => res.json(await Order.find().populate('coffee user').sort('-createdAt'))))
+app.patch('/api/orders/:id', asyncRoute(async (req, res) => res.json(await Order.findByIdAndUpdate(req.params.id, req.body, { new: true }))))
 app.post('/api/orders', asyncRoute(async (req, res) => {
   const { user: userId, ...orderDetails } = req.body
   if (!userId || !mongoose.isValidObjectId(userId)) return res.status(400).json({ error: 'A valid signed-in user is required to create an order.' })
