@@ -5,6 +5,7 @@ import AyskeopiMenuPage from './pages/landing/AyskeopiMenuPage'
 import CoffeeMatchPage from './pages/landing/CoffeeMatchPage'
 import AyskeopiRewardsPage from './pages/landing/AyskeopiRewardsPage'
 import AyskeopiContactPage from './pages/landing/AyskeopiContactPage'
+import AuthPage from './AuthPage'
 import ForgotPasswordPage from './ForgotPasswordPage'
 import LoadingScreen from './components/LoadingScreen'
 import AdminLayout from './pages/admin/AdminLayout'
@@ -97,9 +98,9 @@ function App() {
           <Route path="feedback"  element={<AdminFeedback />} />
         </Route>
 
-        <Route path="/app/*"   element={<Navigate to="/" replace />} />
-        <Route path="/login"   element={<Navigate to="/" replace />} />
-        <Route path="/register" element={<Navigate to="/" replace />} />
+        <Route path="/app/*"   element={<Navigate to="/coffee-menu" replace />} />
+        <Route path="/login"   element={<AuthPage mode="login" />} />
+        <Route path="/register" element={<AuthPage mode="register" />} />
         <Route path="*"        element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

@@ -105,7 +105,7 @@ export default function AdminLogin() {
                 Admin Portal
               </h1>
               <p style={{ margin: 0, fontSize: 12, color: '#4a675a' }}>
-                Vizora Management Dashboard
+                Management Dashboard
               </p>
             </div>
           </div>
@@ -262,7 +262,7 @@ export default function AdminLogin() {
             padding: '14px 16px',
           }}>
             <p style={{ margin: '0 0 8px', fontSize: 10, fontWeight: 700, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-              🔐 Default Admin Credentials
+              Default Admin Credentials
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12 }}>
               <div style={{ display: 'flex', gap: 8 }}>

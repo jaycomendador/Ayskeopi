@@ -58,7 +58,10 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
       const { data } = await api.post(isLogin ? '/auth/login' : '/auth/register', payload)
       sessionStorage.setItem('ayskeopiUser', JSON.stringify(data.user))
       setMessage(isLogin ? 'Welcome back! Redirecting…' : 'Account created! Redirecting…')
-      setTimeout(() => { onClose() }, 600)
+      setTimeout(() => {
+        onClose()
+        navigate('/coffee-menu')
+      }, 600)
     } catch (error) {
       setIsError(true)
       setMessage(error.response?.data?.error || 'We could not complete that request. Please try again.')

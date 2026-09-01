@@ -124,7 +124,7 @@ export default function AdminCustomers() {
                     <td style={{ padding: '14px 20px', color: '#9a938d' }}>
                       {customer.coffeeProfile ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                          <span>☕ {customer.coffeeProfile.temperature || 'Cold'} · {customer.coffeeProfile.flavor || 'Rich'}</span>
+                          <span>{customer.coffeeProfile.temperature || 'Cold'} · {customer.coffeeProfile.flavor || 'Rich'}</span>
                           <span style={{ fontSize: 10, color: '#526b60' }}>Strength: {customer.coffeeProfile.strength || 'Medium'}</span>
                         </div>
                       ) : (
@@ -134,17 +134,17 @@ export default function AdminCustomers() {
 
                     {/* Passport Stamps */}
                     <td style={{ padding: '14px 20px', fontWeight: 600, color: '#fff' }}>
-                      🎟️ {customer.passportStamps || 0} stamps
+                      {customer.passportStamps || 0} stamps
                     </td>
 
                     {/* Loyalty Points */}
                     <td style={{ padding: '14px 20px', fontWeight: 700, color: '#10b981' }}>
-                      🪙 {customer.loyaltyPoints || 0} pts
+                      {customer.loyaltyPoints || 0} pts
                     </td>
 
                     {/* Streak */}
                     <td style={{ padding: '14px 20px', color: '#f59e0b', fontWeight: 600 }}>
-                      🔥 {customer.streak || 0} days
+                      {customer.streak || 0} days
                     </td>
 
                     {/* Achievements */}

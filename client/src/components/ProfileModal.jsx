@@ -105,14 +105,9 @@ export default function ProfileModal({ user, onClose, onLogout }) {
                     background: i < stamps ? '#c9a84c' : 'rgba(255,255,255,.04)',
                     color: '#000',
                     display: 'grid', placeItems: 'center',
+                    boxShadow: i < stamps ? '0 0 0 1px rgba(201,168,76,.15)' : 'none',
                   }}
-                >
-                  {i < stamps ? (
-                    <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: 10, height: 10, color: '#000' }}>
-                      <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
-                    </svg>
-                  ) : null}
-                </div>
+                />
               ))}
             </div>
             <p style={{ margin: 0, fontSize: 11, color: '#9a938d' }}>

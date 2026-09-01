@@ -18,6 +18,17 @@ export default function AdminProducts() {
   const [searchQuery, setSearchQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('All')
   const [refreshing, setRefreshing] = useState(false)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [newProduct, setNewProduct] = useState({
+    name: '',
+    description: '',
+    category: 'Cold Brew',
+    price: '',
+    rewardPoints: '',
+    image: '',
+    available: true,
+  })
+  const [submitting, setSubmitting] = useState(false)
 
   const fetchProducts = async (isSilent = false) => {
     if (!isSilent) setLoading(true)
@@ -40,16 +51,52 @@ export default function AdminProducts() {
 
   const handleToggleActive = async (id, currentVal) => {
     try {
-      // Optimiztic UI update
       setCoffees(prev => prev.map(c => c._id === id ? { ...c, available: !currentVal } : c))
-      
-      // Persist to server using new PATCH endpoint
       await api.patch(`/coffees/${id}`, { available: !currentVal })
     } catch (err) {
       console.error('Could not toggle active state:', err)
-      // Revert state if failed
       setCoffees(prev => prev.map(c => c._id === id ? { ...c, available: currentVal } : c))
       alert('Failed to update product availability on the server.')
+    }
+  }
+
+  const handleCreateProduct = async (e) => {
+    e.preventDefault()
+    setSubmitting(true)
+
+    try {
+      const payload = {
+        name: newProduct.name.trim(),
+        description: newProduct.description.trim() || 'Freshly crafted coffee.',
+        category: newProduct.category,
+        price: Number(newProduct.price),
+        rewardPoints: Number(newProduct.rewardPoints || 0),
+        image: newProduct.image.trim() || '/menu/01_Vanilla_Bean_Cold_Brew.png',
+        available: newProduct.available,
+      }
+
+      if (!payload.name || Number.isNaN(payload.price) || payload.price <= 0) {
+        alert('Please enter a valid product name and price.')
+        return
+      }
+
+      await api.post('/coffees', payload)
+      setShowAddModal(false)
+      setNewProduct({
+        name: '',
+        description: '',
+        category: 'Cold Brew',
+        price: '',
+        rewardPoints: '',
+        image: '',
+        available: true,
+      })
+      await fetchProducts(true)
+    } catch (err) {
+      console.error('Could not create product:', err)
+      alert(err.response?.data?.error || 'Failed to create product.')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -156,13 +203,31 @@ export default function AdminProducts() {
 
       {/* Main product inventory block */}
       <div style={{ background: '#161a18', border: '1px solid rgba(255,255,255,.04)', borderRadius: 16, overflow: 'hidden' }}>
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <div>
             <span style={{ fontSize: 10, fontWeight: 700, color: '#687e74', letterSpacing: '0.05em', textTransform: 'uppercase' }}>PRODUCT LIST</span>
             <h3 style={{ margin: '4px 0 0', fontSize: 18, fontWeight: 800, color: '#fff' }}>
               {coffees.length} Coffees <span style={{ fontSize: 11, background: 'rgba(16,185,129,.1)', color: '#10b981', padding: '2px 6px', borderRadius: 20, marginLeft: 6 }}>+{coffees.filter(c => c.available).length} Active</span>
             </h3>
           </div>
+
+          <button
+            onClick={() => setShowAddModal(true)}
+            style={{
+              background: '#10b981',
+              color: '#000',
+              border: 'none',
+              borderRadius: 10,
+              padding: '10px 16px',
+              fontSize: 12,
+              fontWeight: 800,
+              cursor: 'pointer',
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+            }}
+          >
+            Add Product
+          </button>
         </div>
 
         {/* Scrollable table container */}
@@ -174,7 +239,7 @@ export default function AdminProducts() {
                 <th style={{ padding: '14px 24px' }}>Category</th>
                 <th style={{ padding: '14px 24px' }}>Price</th>
                 <th style={{ padding: '14px 24px' }}>Points</th>
-                <th style={{ padding: '14px 24px' }}>Mock Stock</th>
+                <th style={{ padding: '14px 24px' }}>Stock</th>
                 <th style={{ padding: '14px 24px' }}>Active Switch</th>
               </tr>
             </thead>
@@ -221,12 +286,12 @@ export default function AdminProducts() {
 
                     {/* Points */}
                     <td style={{ padding: '12px 24px', fontSize: 12, color: '#10b981', fontWeight: 600 }}>
-                      🪙 {item.rewardPoints || 10}
+                      {item.rewardPoints || 10}
                     </td>
 
                     {/* Stock */}
                     <td style={{ padding: '12px 24px', fontSize: 12, color: '#9a938d' }}>
-                      {item.price > 170 ? '28 items' : '45 items'}
+                      {item.available ? 'Available' : 'Hidden'}
                     </td>
 
                     {/* Switch availability */}
@@ -265,6 +330,68 @@ export default function AdminProducts() {
           </table>
         </div>
       </div>
+
+      {showAddModal && (
+        <div onClick={(e) => e.target === e.currentTarget && setShowAddModal(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, zIndex: 1000 }}>
+          <div style={{ width: '100%', maxWidth: 520, background: '#111714', border: '1px solid rgba(255,255,255,.08)', borderRadius: 18, padding: 24, boxShadow: '0 30px 80px rgba(0,0,0,.6)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <div>
+                <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: '#10b981', letterSpacing: '0.08em', textTransform: 'uppercase' }}>New Product</p>
+                <h3 style={{ margin: '6px 0 0', fontSize: 22, fontWeight: 800, color: '#fff' }}>Add Coffee Item</h3>
+              </div>
+              <button onClick={() => setShowAddModal(false)} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,.08)', color: '#fff', borderRadius: 8, width: 32, height: 32, cursor: 'pointer' }}>×</button>
+            </div>
+
+            <form onSubmit={handleCreateProduct} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 11, color: '#9a938d', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Name
+                  <input required value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} style={{ background: '#171d1a', border: '1px solid rgba(255,255,255,.06)', borderRadius: 10, padding: '10px 12px', color: '#fff', outline: 'none' }} />
+                </label>
+
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 11, color: '#9a938d', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Category
+                  <select value={newProduct.category} onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })} style={{ background: '#171d1a', border: '1px solid rgba(255,255,255,.06)', borderRadius: 10, padding: '10px 12px', color: '#fff', outline: 'none' }}>
+                    {categories.filter(c => c !== 'All').map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                  </select>
+                </label>
+              </div>
+
+              <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 11, color: '#9a938d', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Description
+                <textarea rows={3} value={newProduct.description} onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })} style={{ background: '#171d1a', border: '1px solid rgba(255,255,255,.06)', borderRadius: 10, padding: '10px 12px', color: '#fff', outline: 'none', resize: 'vertical' }} />
+              </label>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 11, color: '#9a938d', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Price
+                  <input required type="number" min="1" value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} style={{ background: '#171d1a', border: '1px solid rgba(255,255,255,.06)', borderRadius: 10, padding: '10px 12px', color: '#fff', outline: 'none' }} />
+                </label>
+
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 11, color: '#9a938d', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Reward Points
+                  <input type="number" min="0" value={newProduct.rewardPoints} onChange={(e) => setNewProduct({ ...newProduct, rewardPoints: e.target.value })} style={{ background: '#171d1a', border: '1px solid rgba(255,255,255,.06)', borderRadius: 10, padding: '10px 12px', color: '#fff', outline: 'none' }} />
+                </label>
+              </div>
+
+              <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 11, color: '#9a938d', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Image URL
+                <input value={newProduct.image} onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })} placeholder="/menu/01_Vanilla_Bean_Cold_Brew.png" style={{ background: '#171d1a', border: '1px solid rgba(255,255,255,.06)', borderRadius: 10, padding: '10px 12px', color: '#fff', outline: 'none' }} />
+              </label>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, color: '#e8e2d8' }}>
+                <input type="checkbox" checked={newProduct.available} onChange={(e) => setNewProduct({ ...newProduct, available: e.target.checked })} />
+                Available in menu
+              </label>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 8 }}>
+                <button type="button" onClick={() => setShowAddModal(false)} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,.08)', color: '#9a938d', borderRadius: 10, padding: '10px 16px', cursor: 'pointer' }}>Cancel</button>
+                <button type="submit" disabled={submitting} style={{ background: '#10b981', color: '#000', border: 'none', borderRadius: 10, padding: '10px 18px', cursor: 'pointer', fontWeight: 800 }}>{submitting ? 'Saving...' : 'Save Product'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
