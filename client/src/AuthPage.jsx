@@ -37,7 +37,7 @@ export default function AuthPage({ mode }) {
       const { data } = await api.post(isLogin ? '/auth/login' : '/auth/register', payload)
       sessionStorage.setItem('ayskeopiUser', JSON.stringify(data.user))
       setMessage(isLogin ? 'Welcome back — opening your coffee ritual.' : 'Your account is ready — welcome to Ayskeopi.')
-      setTimeout(() => navigate('/app'), 450)
+      setTimeout(() => navigate('/coffee-menu'), 450)
     } catch (error) {
       setMessage(error.response?.data?.error || 'We could not complete that request. Please try again.')
     } finally {
@@ -59,6 +59,10 @@ export default function AuthPage({ mode }) {
         {message && <p role="status" className="mt-3 rounded-lg bg-white/10 p-3 text-xs text-[#e0d8d1]">{message}</p>}
         {isLogin && <p className="mt-4 text-right text-xs"><Link className="font-semibold text-[#e0ddd8]" to="/forgot-password">Forgot password?</Link></p>}
         <p className="mt-5 text-xs text-[#d5ccc5]/70">{isLogin ? 'New here?' : 'Already have an account?'} <Link className="font-semibold text-[#e0ddd8]" to={isLogin ? '/register' : '/login'}>{isLogin ? 'Create one' : 'Sign in'}</Link></p>
+        <p className="mt-3 text-xs text-[#d5ccc5]/70">
+          Admin access?{' '}
+          <Link className="font-semibold text-[#d8c587]" to="/admin/login">Admin Login</Link>
+        </p>
       </div>
     </section>
   </main>
